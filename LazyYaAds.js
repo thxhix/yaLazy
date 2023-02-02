@@ -160,7 +160,7 @@ class LazyYaAdsDynamic extends LazyYaAdsStatic {
 	#showEvery; // Показывать какждый n параграф
 	#showBetween;
 
-	constructor(debug_mode = false, id, renderCode, show_every = 5, showBetween, desktop_id = 0, mobile_id = 1, all_id = null, pageAdsCount) {
+	constructor(debug_mode = false, id, renderCode, show_every = 5, showBetween, desktop_id = 0, mobile_id = 1, all_id = null) {
 		super();
 		this.debugMode = debug_mode;
 		this.#block_id = id;
@@ -168,7 +168,7 @@ class LazyYaAdsDynamic extends LazyYaAdsStatic {
 		this.#showEvery = show_every;
 		this.#showBetween = showBetween;
 		this.#adIdent = this.#getAdByResponsive(desktop_id, mobile_id, all_id);
-		this.allOnPageCount = pageAdsCount + 1;
+		this.allOnPageCount = this.#getAdsCount() + 1;
 	}
 
 	static init(params, debug_mode = false) {
@@ -181,30 +181,26 @@ class LazyYaAdsDynamic extends LazyYaAdsStatic {
 				// desktop - id рекламы для ПК | *
 				// tablet - id рекламы для планшетов | *
 				// all_id - id рекламы для ВСЕХ устройств (Если указано - desktop и tablet не учитываются) 
-				// staticCount - Кол-во статичной рекламы (Передаем из статика) | *
+				// staticCount - Считаем кол-во реклам, чтобы синхронизировать новые со старыми
 				// findObject - querySelector для блоков, между которыми будет распологаться реклама
-
-				return (new LazyYaAdsDynamic(debug_mode, params.block_id, params.renderCode, params.showEvery, params.findObject, params.desktop, params.mobile, params.all_id, params.staticCount)).insertScripts().drawPlaceholders().startListeningScroll()
-			}
-			else {
+				return (new LazyYaAdsDynamic(debug_mode, params.block_id, params.renderCode, params.showEvery, params.findObject, params.desktop, params.mobile, params.all_id)).insertScripts().drawPlaceholders().startListeningScroll()
+			} else {
 				if (debug_mode) {
 					console.error('Не все обязательные параметры переданы!')
 					return console.log((this.validParams(params)).value)
 				}
 			}
-
 		} catch (e) {
 			if (this.debugMode) {
 				console.log('DynamicYaAds Error: init()')
 				console.error(e);
 			}
 		}
-
 	}
 
 	static validParams(params) {
 		// Указываем ключи обязательных полей. '/' = ИЛИ
-		let requiredFields = ['block_id', 'renderCode', 'desktop/tablet/all_id', 'staticCount'];
+		let requiredFields = ['block_id', 'renderCode', 'desktop/tablet/all_id'];
 
 		requiredFields.forEach((requiredItem, key) => {
 			if (requiredItem.indexOf('/') >= 0) {
@@ -231,6 +227,11 @@ class LazyYaAdsDynamic extends LazyYaAdsStatic {
 		} else {
 			return { status: true, value: requiredFields };
 		}
+	}
+
+	// Считаем кол-во реклам, чтобы синхронизировать новые со старыми
+	#getAdsCount() {		
+		return document.querySelectorAll('.ya_rtb_static, .ya_rtb_dynamic').length;
 	}
 
 	// Подставляем рекламу в зависимости от разрешения
@@ -269,18 +270,16 @@ class LazyYaAdsDynamic extends LazyYaAdsStatic {
 
 			itemsList.forEach((item, key) => {
 				if (key % this.#showEvery == 0 && key != 0) {
-					let commercial_template = `<div class="ya_rtb_container ${this.#block_id}" data-id="${counter}" id="${this.#block_id}-${this.#adIdent}-${counter}"></div>`;
+					let commercial_template = `<div class="ya_rtb_dynamic ${this.#block_id}" data-id="${counter}" id="${this.#block_id}-${this.#adIdent}-${counter}"></div>`;
 
 					if (redraw) {
 						if (!item.classList.contains('ya_rtb_parent')) {
-							commercial_template = `<div class="ya_rtb_container ${this.#block_id}" data-id="${counter}" id="${this.#block_id}-${this.#adIdent}-${counter}" data-opened='false'></div>`;
+							commercial_template = `<div class="ya_rtb_dynamic ${this.#block_id}" data-id="${counter}" id="${this.#block_id}-${this.#adIdent}-${counter}" data-opened='false'></div>`;
 						}
 					}
-
 					counter++;
 					item.classList.add('ya_rtb_parent')
 					item.insertAdjacentHTML('beforebegin', commercial_template);
-
 				}
 			});
 			return this;
@@ -316,7 +315,6 @@ class LazyYaAdsDynamic extends LazyYaAdsStatic {
 	// Запускаем рекламу в заглушках
 	pushAllDynamicAds() {
 		try {
-
 			let ads = document.querySelectorAll('.' + this.#block_id + '[data-opened=false]')
 			ads.forEach(item => {
 				window.yaContextCb.push(() => {
@@ -369,7 +367,6 @@ class LazyYaAdsDynamic extends LazyYaAdsStatic {
 		}
 	}
 
-
 	// Забрать параметры
 	getData() {
 		return {
@@ -383,93 +380,78 @@ class LazyYaAdsDynamic extends LazyYaAdsStatic {
 	}
 }
 
+class AdsConfig {
+	// Внутри поста (между параграфами)
+	single = {
+		desktop: {
+			block_id: 'yandex_rtb_R-A-1579880',
+			renderCode: 'R-A-1579880',
+			all_id: 9,
+			showEvery: 5,
+			findObject: '.wrap_page_text p:not(.title_example, .mbf-promo p)',
+		},
+		tablet: {
+			block_id: 'yandex_rtb_R-A-1579880',
+			renderCode: 'R-A-1579880',
+			all_id: 10,
+			showEvery: 5,
+			findObject: '.wrap_page_text p:not(.title_example, .mbf-promo p)',
+		},
+		mobile: {
+			block_id: 'yandex_rtb_R-A-1579880',
+			renderCode: 'R-A-1579880',
+			all_id: 11,
+			showEvery: 6,
+			findObject: '.wrap_page_text p:not(.title_example, .mbf-promo p)',
+		},
+	}
+
+	// Между постами в категориях
+	category = {
+		desktop: {
+			block_id: 'yandex_rtb_R-A-1579880',
+			renderCode: 'R-A-1579880',
+			all_id: 10,
+			showEvery: 3,
+			findObject: '.wrap_post'
+		},
+		tablet: {
+			block_id: 'yandex_rtb_R-A-1579880',
+			renderCode: 'R-A-1579880',
+			all_id: 10,
+			showEvery: 3,
+			findObject: '.wrap_post'
+		},
+		mobile: {
+			block_id: 'yandex_rtb_R-A-1579880',
+			renderCode: 'R-A-1579880',
+			all_id: 12,
+			showEvery: 3,
+			findObject: '.wrap_post'
+		},
+	}
+
+	// Считаем через какой девайс зашел юзер
+	#getDevice() {
+		let device = 'desktop';
+		if (window.matchMedia('(min-width: 1220px)').matches) {
+			device = 'desktop'
+		} else if (window.matchMedia('(max-width: 1219px)').matches && window.matchMedia('(min-width: 596px)').matches) {
+			device = 'tablet'
+		} else if (window.matchMedia('(max-width: 595px)').matches) {
+			device = 'mobile'
+		}
+		return device;
+	}
+
+	// Выдаем готовый конфиг (готов для инита динамики LazyYaAdsDynamic.init(config))
+	getConfig(pageName) {
+		return this[pageName][this.#getDevice()];
+	}
+}
+
 var YaAdsStatic = undefined;
-var YaAdsDynamic = undefined;
 
 document.addEventListener('DOMContentLoaded', (e) => {
-	YaAdsStatic = LazyYaAdsStatic.init()
-
-	// Если существует переменная currentPageName (задается в template на той странице, где нужна динамика (внутри поста между абзацами и тд)) 
-	// - запускаем динамическую отрисовку рекламных блоков.
-	try {
-		if (currentPageName) {
-			let max_width = window.innerWidth;
-			let device = 'desktop';
-
-			if (max_width > 1220) {
-				device = 'desktop'
-			} else if (max_width <= 1219 && max_width > 595) {
-				device = 'tablet'
-			} else if (max_width <= 595) {
-				device = 'mobile'
-			}
-
-			let config = {
-				// Внутри поста (между параграфами)
-				single: {
-					desktop: {
-						code: 'R-A-1579880',
-						ident: 9,
-						every: 5,
-						findObject: '.wrap_page_text p:not(.title_example, .mbf-promo p)'
-					},
-					tablet: {
-						code: 'R-A-1579880',
-						ident: 10,
-						every: 5,
-						findObject: '.wrap_page_text p:not(.title_example, .mbf-promo p)'
-
-					},
-					mobile: {
-						code: 'R-A-1579880',
-						ident: 11,
-						every: 6,
-						findObject: '.wrap_page_text p:not(.title_example, .mbf-promo p)'
-					},
-				},
-
-				// Между постами в категориях
-				category: {
-					tablet: {
-						code: 'R-A-1579880',
-						ident: 10,
-						every: 3,
-						findObject: '.wrap_post'
-					}
-				}
-			}
-
-			let currentConfig = false;
-			// Объект с подогнанными параметрами под загруженную страницу
-			if (config[currentPageName] && config[currentPageName][device]) {
-				currentConfig = config[currentPageName][device]
-			}
-
-			YaAdsDynamic = LazyYaAdsDynamic.init({
-				block_id: `yandex_rtb_${currentConfig.code}`,
-				renderCode: currentConfig.code,
-				all_id: currentConfig.ident,
-
-				showEvery: currentConfig.every,
-				findObject: currentConfig.findObject,
-
-				staticCount: YaAdsStatic.allOnPageCount,
-			});
-
-			if (currentPageName == 'category') {
-				if (YaAdsDynamic) {
-					let countOld = document.querySelectorAll('.wrap_post.clearfix').length
-					document.addEventListener('scroll', (e) => {
-						let countNew = document.querySelectorAll('.wrap_post.clearfix').length;
-
-						if (countOld < countNew) {
-							YaAdsDynamic.drawPlaceholders(currentConfig.findObject, true)
-							YaAdsDynamic.pushAllDynamicAds()
-							countOld = countNew;
-						}
-					})
-				}
-			}
-		}
-	} catch { }
+	YaAdsStatic = LazyYaAdsStatic.init() // Включаем все статик рекламы (Которые отрисовываются через PHP)
 })
