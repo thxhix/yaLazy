@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+    </head>
+    <body>
+        <header></header>
+        <main>
+            <section>Section 1</section>
+            <!-- Static отрисовываются в DOM -->
+            <div id="yandex_rtb_R-A-|example|" data-id="R-A-|example|" class="ya_rtb_static"></div>
+            <section>Section 2</section>
+            <section>
+                <ul class="news-list">
+                    <!-- Dynamic отрисовываются через JS - в данном примере между li-элементами (каждый 5й li) -->
+                    <li class="news-list__item">1</li>
+                    <li class="news-list__item">2</li>
+                    <li class="news-list__item">3</li>
+                    <li class="news-list__item">4</li>
+                    <li class="news-list__item">5</li>
+                    <li class="news-list__item">6</li>
+                    <li class="news-list__item">7</li>
+                    <li class="news-list__item">8</li>
+                    <li class="news-list__item">9</li>
+                    <li class="news-list__item">10</li>
+                </ul>
+            </section>
+        </main>
+        <script>
+            document.addEventListener("DOMContentLoaded", (e) => {
+                let config = {
+                    block_id: "yandex_rtb_R-A-|example|",
+                    renderCode: "R-A-|example|",
+                    all_id: 9,
+                    showEvery: 5,
+                    findObject: "li.news-list__item",
+                };
+
+                YaAdsSingle = LazyYaAdsDynamic.init(config);
+            });
+        </script>
+    </body>
+</html>

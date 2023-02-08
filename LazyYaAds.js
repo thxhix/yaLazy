@@ -380,76 +380,8 @@ class LazyYaAdsDynamic extends LazyYaAdsStatic {
 	}
 }
 
-class AdsConfig {
-	// Внутри поста (между параграфами)
-	single = {
-		desktop: {
-			block_id: 'yandex_rtb_R-A-1579880',
-			renderCode: 'R-A-1579880',
-			all_id: 9,
-			showEvery: 5,
-			findObject: '.wrap_page_text p:not(.title_example, .mbf-promo p)',
-		},
-		tablet: {
-			block_id: 'yandex_rtb_R-A-1579880',
-			renderCode: 'R-A-1579880',
-			all_id: 10,
-			showEvery: 5,
-			findObject: '.wrap_page_text p:not(.title_example, .mbf-promo p)',
-		},
-		mobile: {
-			block_id: 'yandex_rtb_R-A-1579880',
-			renderCode: 'R-A-1579880',
-			all_id: 11,
-			showEvery: 6,
-			findObject: '.wrap_page_text p:not(.title_example, .mbf-promo p)',
-		},
-	}
 
-	// Между постами в категориях
-	category = {
-		desktop: {
-			block_id: 'yandex_rtb_R-A-1579880',
-			renderCode: 'R-A-1579880',
-			all_id: 10,
-			showEvery: 3,
-			findObject: '.wrap_post'
-		},
-		tablet: {
-			block_id: 'yandex_rtb_R-A-1579880',
-			renderCode: 'R-A-1579880',
-			all_id: 10,
-			showEvery: 3,
-			findObject: '.wrap_post'
-		},
-		mobile: {
-			block_id: 'yandex_rtb_R-A-1579880',
-			renderCode: 'R-A-1579880',
-			all_id: 12,
-			showEvery: 3,
-			findObject: '.wrap_post'
-		},
-	}
-
-	// Считаем через какой девайс зашел юзер
-	#getDevice() {
-		let device = 'desktop';
-		if (window.matchMedia('(min-width: 1220px)').matches) {
-			device = 'desktop'
-		} else if (window.matchMedia('(max-width: 1219px)').matches && window.matchMedia('(min-width: 596px)').matches) {
-			device = 'tablet'
-		} else if (window.matchMedia('(max-width: 595px)').matches) {
-			device = 'mobile'
-		}
-		return device;
-	}
-
-	// Выдаем готовый конфиг (готов для инита динамики LazyYaAdsDynamic.init(config))
-	getConfig(pageName) {
-		return this[pageName][this.#getDevice()];
-	}
-}
-
+// Static method will load on every page for listening all static ads
 var YaAdsStatic = undefined;
 
 document.addEventListener('DOMContentLoaded', (e) => {
